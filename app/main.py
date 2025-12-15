@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi_users import FastAPIUsers
@@ -9,8 +10,6 @@ from app.models.user_model import User
 from app.manager.user_manager import UserManager
 from app.security.jwt import auth_backend
 from app.schema.user_schema import UserRead, UserCreate, UserUpdate
-
-app = FastAPI()
 
 
 # ---------- DB DEPENDENCIES ----------
@@ -24,7 +23,6 @@ async def get_user_db(session: AsyncSession = Depends(get_async_session)):
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
-
 # ---------- FASTAPI USERS ----------
 fastapi_users = FastAPIUsers(
     get_user_manager,
@@ -33,6 +31,15 @@ fastapi_users = FastAPIUsers(
 
 current_user = fastapi_users.current_user()
 
+
+@asynccontextmanager
+async def lifespan(app : FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 # ---------- ROUTERS ----------
 # Auth
@@ -81,10 +88,3 @@ def admin_required(user=Depends(current_user)):
 @app.get("/admin-only")
 def admin_route(user=Depends(admin_required)):
     return {"msg": f"Hello admin {user.email}"}
-
-
-# ---------- CREATE TABLES ----------
-@app.on_event("startup")
-async def on_startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
