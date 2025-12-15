@@ -1,4 +1,5 @@
 
+from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_db import Base
@@ -10,3 +11,4 @@ class Restaurent(Base):
 
     # TODO: add condition check that user.role == "partner"
     partner : Mapped["User"] = relationship(back_populates="restaurents")
+    dishes : Mapped[List["Dish"]] = relationship(back_populates="restaurent")
