@@ -1,5 +1,5 @@
 from fastapi_users import BaseUserManager, UUIDIDMixin
-from models import User
+from app.models.user_model import User
 
 SECRET = "SUPER_SECRET_CHANGE_ME"
 

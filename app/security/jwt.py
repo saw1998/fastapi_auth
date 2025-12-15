@@ -1,6 +1,6 @@
 # auth.py
 from fastapi_users.authentication import JWTStrategy, BearerTransport, AuthenticationBackend
-from models import User
+from app.models.user_model import User
 from typing import Dict, Any
 from fastapi_users.jwt import generate_jwt
 # Remove duplicate import

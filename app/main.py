@@ -4,11 +4,11 @@ from fastapi_users import FastAPIUsers
 from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import engine, AsyncSessionLocal, Base
-from models import User
-from users import UserManager
-from auth import auth_backend
-from schemas import UserRead, UserCreate, UserUpdate
+from app.db.base_db import engine, AsyncSessionLocal, Base
+from app.models.user_model import User
+from app.manager.user_manager import UserManager
+from app.security.jwt import auth_backend
+from app.schema.user_schema import UserRead, UserCreate, UserUpdate
 
 app = FastAPI()
 
