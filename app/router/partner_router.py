@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from app.db.base_db import get_db
 from app.main import current_user
 from app.models.dish_model import Dish
@@ -37,3 +38,28 @@ async def add_dish(payload : DishCreate, user = Depends(partner_required), db : 
         return new_dish
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Something went wrong: {str(e)}")
+
+@router.get("/my-restaurent")
+async def get_all_partner_restaurent(user = Depends(partner_required), db:AsyncSession = Depends(get_db)):
+    stmt = select(Restaurent).where(Restaurent.partner_id == user.id)
+    result = await db.execute(stmt)
+    restaurents = result.scalars().all()
+    return restaurents
+
+# async def get_restaurent(restaurent_id : int, db : AsyncSession = Depends(get_db)):
+#     stmt = select(Restaurent).where(Restaurent.id == restaurent_id)
+#     result = await db.execute(stmt)
+#     return result.scalar_one_or_none()
+
+@router.get("/my-dish")
+async def get_partner_dish(restaurent_id : int | None = None, user= Depends(partner_required), db : AsyncSession = Depends(get_db)):
+    try:
+        if(restaurent_id):
+            stmt = select(Restaurent).where(Restaurent.id == restaurent_id, Restaurent.partner_id == user.id)
+        else:
+            stmt = select(Restaurent).where(Restaurent.partner_id == user.id)
+        result = await db.execute(stmt)
+        return result.scalars().all()
+
+    except Exception as e:
+        raise HTTPException(detail=f"Error : {str(e)}", status_code=status.HTTP_400_BAD_REQUEST)
